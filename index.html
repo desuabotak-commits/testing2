@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TARO PESAN APA AJA BRE</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Segoe UI',sans-serif;
+}
+
+body{
+background:linear-gradient(135deg,#000000,#0f172a,#2563eb);
+color:white;
+min-height:100vh;
+}
+
+header{
+text-align:center;
+padding:40px 20px;
+}
+
+header h1{
+font-size:42px;
+text-shadow:0 0 20px #3b82f6;
+}
+
+header p{
+margin-top:10px;
+color:#cbd5e1;
+}
+
+.container{
+max-width:900px;
+margin:auto;
+padding:20px;
+}
+
+.card{
+background:rgba(255,255,255,0.08);
+backdrop-filter:blur(10px);
+padding:20px;
+border-radius:20px;
+margin-bottom:20px;
+}
+
+textarea{
+width:100%;
+height:120px;
+padding:15px;
+border:none;
+border-radius:15px;
+resize:none;
+font-size:16px;
+}
+
+button{
+width:100%;
+padding:15px;
+margin-top:10px;
+border:none;
+border-radius:15px;
+background:#2563eb;
+color:white;
+font-size:16px;
+font-weight:bold;
+cursor:pointer;
+}
+
+button:hover{
+background:#1d4ed8;
+}
+
+.post{
+background:#111827;
+padding:15px;
+margin-top:15px;
+border-radius:15px;
+border-left:4px solid #3b82f6;
+}
+
+.user{
+color:#60a5fa;
+margin-bottom:5px;
+font-size:14px;
+}
+</style>
+</head>
+<body>
+
+<header>
+<h1>💬 TARO PESAN APA AJA BRE</h1>
+<p>Tulis apa aja, tetap anonim dan bisa dilihat semua orang.</p>
+</header>
+
+<div class="container">
+
+<div class="card">
+<textarea id="pesanInput" placeholder="Tulis pesan anonim..."></textarea>
+<button onclick="kirimPesan()">Kirim Pesan</button>
+</div>
+
+<div class="card">
+<h2>Pesan Publik</h2>
+<div id="daftarPesan"></div>
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getFirestore,
+collection,
+addDoc,
+query,
+orderBy,
+onSnapshot,
+serverTimestamp
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* GANTI DENGAN DATA FIREBASE KAMU */
+const firebaseConfig = {
+apiKey: "MASUKKAN_API_KEY",
+authDomain: "PROJECT.firebaseapp.com",
+projectId: "PROJECT_ID",
+storageBucket: "PROJECT.appspot.com",
+messagingSenderId: "123456789",
+appId: "APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.kirimPesan = async function(){
+
+const input =
+document.getElementById("pesanInput");
+
+const pesan =
+input.value.trim();
+
+if(!pesan){
+alert("Tulis pesan terlebih dahulu!");
+return;
+}
+
+try{
+
+await addDoc(
+collection(db,"pesan"),
+{
+isi: pesan,
+waktu: serverTimestamp()
+}
+);
+
+input.value="";
+
+}catch(error){
+
+alert("Gagal mengirim pesan");
+
+}
+
+}
+
+const q = query(
+collection(db,"pesan"),
+orderBy("waktu","desc")
+);
+
+onSnapshot(q,(snapshot)=>{
+
+const daftar =
+document.getElementById("daftarPesan");
+
+daftar.innerHTML="";
+
+snapshot.forEach((doc)=>{
+
+const data = doc.data();
+
+daftar.innerHTML += `
+<div class="post">
+<div class="user">👤 Anonim</div>
+<div>${data.isi}</div>
+</div>
+`;
+
+});
+
+});
+
+</script>
+
+</body>
+</html>
